@@ -51,7 +51,7 @@ class Main_bird(pygame.sprite.Sprite):
 
     def update(self):
         if pygame.sprite.collide_mask(self, palms):
-            pass
+            print('game over')
         if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
             self.rect = self.rect.move(0, 1)
 
@@ -66,7 +66,7 @@ class Palms(pygame.sprite.Sprite):
         self.rect_copy = self.image_copy.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
         self.mask_copy = pygame.mask.from_surface(self.image_copy)
-        self.rect.x = -11700
+        self.rect.x = 220
         self.rect.y = 0
         self.rect_copy.x = WIDTH
         self.rect_copy.y = 0
@@ -89,7 +89,6 @@ class Palms(pygame.sprite.Sprite):
             if self.rect.x > -MAPSIZE:
                 self.rect = self.rect.move(-1, 0)
             self.rect_copy = self.rect_copy.move(-1, 0)
-        print(self.rect_copy.x)
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Flappy Birdie')
