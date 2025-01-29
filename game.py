@@ -10,6 +10,7 @@ FPS = 50
 screen = pygame.display.set_mode(size)
 FIRST_IMAGE = 'first_image'
 SECOND_IMAGE = 'second_image'
+flag = FIRST_IMAGE
 MAPSIZE = 12750
 
 
@@ -50,7 +51,7 @@ class Main_bird(pygame.sprite.Sprite):
         self.rect.y = 220
 
     def update(self):
-        if pygame.sprite.collide_mask(self, palms):
+        if pygame.sprite.collide_mask(self, palms) or pygame.sprite.collide_mask(self, palms_copy):
             print('game over')
         if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
             self.rect = self.rect.move(0, 1)
@@ -59,36 +60,46 @@ class Main_bird(pygame.sprite.Sprite):
 class Palms(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__(all_sprites)
-        self.flag = FIRST_IMAGE
         self.image = load_image('картаполная.png', -1)
-        self.image_copy = load_image('fullmapcopy.png', -1)
         self.rect = self.image.get_rect()
-        self.rect_copy = self.image_copy.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
-        self.mask_copy = pygame.mask.from_surface(self.image_copy)
-        self.rect.x = 220
+        self.rect.x = -11600
         self.rect.y = 0
-        self.rect_copy.x = WIDTH
-        self.rect_copy.y = 0
-
 
     def update(self):
-        if self.rect.x == -11900  and self.flag == FIRST_IMAGE:
-            self.rect_copy.x = WIDTH
-            self.flag = SECOND_IMAGE
-
-        elif self.rect_copy.x == -11900 and self.flag == SECOND_IMAGE:
+        global flag
+        if palms_copy.rect.x == -11750 and flag == SECOND_IMAGE:
             self.rect.x = WIDTH
-            self.flag = FIRST_IMAGE
-
-        if self.flag == FIRST_IMAGE:
-            if self.rect_copy.x > -MAPSIZE:
-                self.rect_copy = self.rect_copy.move(-1, 0)
+            flag = FIRST_IMAGE
+        if flag == FIRST_IMAGE:
+            if palms_copy.rect.x > -MAPSIZE:
+                palms_copy.rect = palms_copy.rect.move(-1, 0)
             self.rect = self.rect.move(-1, 0)
         else:
-            if self.rect.x > -MAPSIZE:
-                self.rect = self.rect.move(-1, 0)
-            self.rect_copy = self.rect_copy.move(-1, 0)
+            self.rect.x = WIDTH
+        print("Первая картинка, ", self.rect.x)
+
+class Palms_copy(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__(all_sprites)
+        self.flag = FIRST_IMAGE
+        self.image = load_image('fullmapcopy.png', -1)
+        self.rect = self.image.get_rect()
+        self.mask_copy = pygame.mask.from_surface(self.image)
+        self.rect.y = 0
+
+    def update(self):
+        global flag
+        if palms.rect.x == -11750  and flag == FIRST_IMAGE:
+            self.rect.x = WIDTH
+            flag = SECOND_IMAGE
+        if flag == SECOND_IMAGE:
+            if palms.rect.x > -MAPSIZE:
+                palms.rect = palms.rect.move(-1, 0)
+            self.rect = self.rect.move(-1, 0)
+        else:
+            self.rect.x = WIDTH
+        print("Вторая картинка, ", self.rect.x)
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Flappy Birdie')
@@ -99,6 +110,7 @@ bird_sprite = pygame.sprite.GroupSingle()
 all_sprites = pygame.sprite.Group()
 player = Main_bird()
 palms = Palms()
+palms_copy = Palms_copy()
 
 while True:
     for event in pygame.event.get():
