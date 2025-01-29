@@ -47,8 +47,7 @@ class Main_bird(pygame.sprite.Sprite):
         self.rect.y = 220
 
     def update(self):
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            self.rect = self.rect.move(0, 1)
+        self.rect = self.rect.move(0, 2)
 
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -63,6 +62,10 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             terminate()
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            player.rect = player.rect.move(0, -35)
     screen.fill((142, 250, 245))
+    all_sprites.draw(screen)
+    player.update()
     pygame.display.flip()
     clock.tick(FPS)
