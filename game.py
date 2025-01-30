@@ -11,7 +11,7 @@ screen = pygame.display.set_mode(size)
 FIRST_IMAGE = 'first_image'
 SECOND_IMAGE = 'second_image'
 flag = FIRST_IMAGE
-MAPSIZE = 12750
+MAPSIZE = 12400
 
 
 def terminate():
@@ -53,8 +53,7 @@ class Main_bird(pygame.sprite.Sprite):
     def update(self):
         if pygame.sprite.collide_mask(self, palms) or pygame.sprite.collide_mask(self, palms_copy):
             print('game over')
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            self.rect = self.rect.move(0, 1)
+        self.rect = self.rect.move(0, 2)
 
 
 class Palms(pygame.sprite.Sprite):
@@ -63,19 +62,19 @@ class Palms(pygame.sprite.Sprite):
         self.image = load_image('картаполная.png', -1)
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
-        self.rect.x = -11600
+        self.rect.x = 220
         self.rect.y = 0
 
     def update(self):
         global flag
-        if palms_copy.rect.x == -11750 and flag == SECOND_IMAGE:
+        if palms_copy.rect.x == -MAPSIZE + WIDTH and flag == SECOND_IMAGE:
             self.rect.x = WIDTH
             flag = FIRST_IMAGE
         if flag == FIRST_IMAGE:
-            if palms_copy.rect.x > -MAPSIZE:
+            if palms_copy.rect.x > -MAPSIZE or self.rect.x > 0:
                 palms_copy.rect = palms_copy.rect.move(-1, 0)
             self.rect = self.rect.move(-1, 0)
-        else:
+        elif palms.rect.x > -MAPSIZE + WIDTH:
             self.rect.x = WIDTH
         print("Первая картинка, ", self.rect.x)
 
@@ -90,14 +89,14 @@ class Palms_copy(pygame.sprite.Sprite):
 
     def update(self):
         global flag
-        if palms.rect.x == -11750  and flag == FIRST_IMAGE:
+        if palms.rect.x == -MAPSIZE + WIDTH  and flag == FIRST_IMAGE:
             self.rect.x = WIDTH
             flag = SECOND_IMAGE
         if flag == SECOND_IMAGE:
-            if palms.rect.x > -MAPSIZE:
+            if palms.rect.x > -MAPSIZE or self.rect.x > 0:
                 palms.rect = palms.rect.move(-1, 0)
             self.rect = self.rect.move(-1, 0)
-        else:
+        elif palms.rect.x > -MAPSIZE + WIDTH:
             self.rect.x = WIDTH
         print("Вторая картинка, ", self.rect.x)
 
@@ -116,6 +115,8 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             terminate()
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            player.rect = player.rect.move(0, -35)
     screen.fill((142, 250, 245))
     all_sprites.draw(screen)
     bird_sprite.draw(screen)
