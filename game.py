@@ -11,7 +11,7 @@ screen = pygame.display.set_mode(size)
 FIRST_IMAGE = 'first_image'
 SECOND_IMAGE = 'second_image'
 flag = FIRST_IMAGE
-MAPSIZE = 12400
+MAPSIZE = 12750
 
 
 def terminate():
