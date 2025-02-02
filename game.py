@@ -13,6 +13,7 @@ SECOND_IMAGE = 'second_image'
 flag = FIRST_IMAGE
 MAPSIZE = 12750
 points = 0
+start_game = False
 
 
 def terminate():
@@ -37,7 +38,26 @@ def load_image(name, colorkey=None):
 
 
 def start_screen():
-    pass
+    intro_text = ["FLUPPY BIRDIE", "",
+                  "Правила игры",
+                  "Нажимайте пробел чтобы избежать столкновения с пальмами",
+                  "и собирайте ягодки для большего количества очков.",
+                  "Ваш рекорд: "]
+    fon = pygame.transform.scale(load_image('fon.jpg'), (WIDTH, HEIGHT))
+    screen.blit(fon, (0, 0))
+    font = pygame.font.Font(None, 30)
+    text_coord = 50
+    for line in intro_text:
+        string_rendered = font.render(line, 1, pygame.Color('white'))
+        intro_rect = string_rendered.get_rect()
+        text_coord += 10
+        intro_rect.top = text_coord
+        intro_rect.x = 10
+        text_coord += intro_rect.height
+        screen.blit(string_rendered, intro_rect)
+    button = load_image('start.png')
+    button = pygame.transform.scale(button, (150, 100))
+    screen.blit(button, (350, 300))
 
 
 class Main_bird(pygame.sprite.Sprite):
@@ -125,6 +145,12 @@ class Palms_copy(pygame.sprite.Sprite):
             self.rect.x = WIDTH
         print("Вторая картинка, ", self.rect.x)
 
+def buttons():
+    pause_image = load_image('pause.png')
+    pause_image = pygame.transform.scale(pause_image, (60, 60))
+    screen.blit(pause_image, (10, 30))
+
+
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Flappy Birdie')
 clock = pygame.time.Clock()
@@ -146,13 +172,20 @@ while True:
             terminate()
         if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
             player.rect = player.rect.move(0, -35)
+        if event.type == pygame.MOUSEBUTTONDOWN and not start_game and 500 > event.pos[0] > 350 and 400 > event.pos[1] > 300:
+            start_game = True
     screen.fill((142, 250, 245))
-    all_sprites.draw(screen)
-    bird_sprite.draw(screen)
-    bird_sprite.update()
-    all_sprites.update()
-    points += 1
-    points_txt = f1.render(str(points), 1, (0, 0, 0))
-    screen.blit(points_txt , (10, 10))
+    if not start_game:
+        start_screen()
+    if start_game:
+        all_sprites.draw(screen)
+        bird_sprite.draw(screen)
+        bird_sprite.update()
+        all_sprites.update()
+        points += 1
+        points_txt = f1.render(str(points), 1, (0, 0, 0))
+        screen.blit(points_txt , (10, 10))
+        buttons()
+
     pygame.display.flip()
     clock.tick(FPS)
