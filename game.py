@@ -1,8 +1,8 @@
 import os
 import sys
+from random import randint, choice
 
 import pygame
-from random import randint
 
 pygame.init()
 size = WIDTH, HEIGHT = 850, 550
@@ -12,6 +12,7 @@ FIRST_IMAGE = 'first_image'
 SECOND_IMAGE = 'second_image'
 flag = FIRST_IMAGE
 MAPSIZE = 12750
+points = 0
 
 
 def terminate():
@@ -40,8 +41,7 @@ def start_screen():
 
 
 class Main_bird(pygame.sprite.Sprite):
-    image = load_image('mainbird.jpg', -1)
-
+    image = load_image('mainbird.png', -1)
     def __init__(self):
         super().__init__(bird_sprite)
         self.image = Main_bird.image
@@ -51,9 +51,34 @@ class Main_bird(pygame.sprite.Sprite):
         self.rect.y = 220
 
     def update(self):
+        global points
         if pygame.sprite.collide_mask(self, palms) or pygame.sprite.collide_mask(self, palms_copy):
-            print('game over')
+            terminate()
+        if self.rect.y == 550:
+            self.rect.y = -50
         self.rect = self.rect.move(0, 2)
+
+
+class Berry(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__(all_sprites)
+        self.image = load_image('berry.png', -1)
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect.x = WIDTH
+        self.move_berry = False
+    def find_rand_y(self):
+        self.rect.y = choice([randint(0, 240), randint(HEIGHT - 200, HEIGHT)])
+        if pygame.sprite.collide_mask(self, palms) or pygame.sprite.collide_mask(self, palms_copy):
+            self.rect.y = choice([randint(0, 240), randint(HEIGHT - 200, HEIGHT)])
+    def update(self, *args, **kwargs):
+        global points
+        print(self.rect.x, self.rect.y)
+        if pygame.sprite.collide_mask(self, player) or self.rect.x < -40:
+            self.rect.x = WIDTH
+            self.find_rand_y()
+            points += 100
+        self.rect = self.rect.move(-1, 0)
 
 
 class Palms(pygame.sprite.Sprite):
@@ -110,10 +135,14 @@ all_sprites = pygame.sprite.Group()
 player = Main_bird()
 palms = Palms()
 palms_copy = Palms_copy()
+berry = Berry()
+
+f1 = pygame.font.Font(None, 36)
+
 
 while True:
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+        if event.type == pygame.QUIT or event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             terminate()
         if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
             player.rect = player.rect.move(0, -35)
@@ -122,6 +151,8 @@ while True:
     bird_sprite.draw(screen)
     bird_sprite.update()
     all_sprites.update()
-
+    points += 1
+    points_txt = f1.render(str(points), 1, (0, 0, 0))
+    screen.blit(points_txt , (10, 10))
     pygame.display.flip()
     clock.tick(FPS)
