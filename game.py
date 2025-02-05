@@ -1,4 +1,3 @@
-import gc
 import os
 import sys
 from random import randint, choice
@@ -321,9 +320,11 @@ while True:
         if ((event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE or event.type == pygame.MOUSEBUTTONDOWN)
                 and start_game == 1):
             player.rect = player.rect.move(0, -35)
-        if event.type == pygame.MOUSEBUTTONDOWN and start_game == 0 and startbutton.rect.collidepoint(event.pos):
+        if event.type == pygame.MOUSEBUTTONDOWN and start_game == 0 and startbutton.rect.collidepoint(event.pos)\
+                or (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and start_game == 0):
             start_game = 1
-        if event.type == pygame.MOUSEBUTTONDOWN and (start_game == 2 or start_game == 3) and restartbutton.rect.collidepoint(event.pos):
+        if event.type == pygame.MOUSEBUTTONDOWN and (start_game == 2 or start_game == 3) and restartbutton.rect.collidepoint(event.pos)\
+                or (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and start_game == 2):
             start_game = 1
             palms.rect.x = 220
             flag = FIRST_IMAGE
@@ -332,7 +333,8 @@ while True:
         if event.type == pygame.MOUSEBUTTONDOWN and start_game == 1 and pausebutton.rect.collidepoint(event.pos):
             save_data(str(points))
             start_game = 3
-        if event.type == pygame.MOUSEBUTTONDOWN and start_game == 3 and continuebutton.rect.collidepoint(event.pos):
+        if ((event.type == pygame.MOUSEBUTTONDOWN and start_game == 3 and continuebutton.rect.collidepoint(event.pos))
+                or (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and start_game == 3)):
             start_game = 1
         if event.type == pygame.MOUSEBUTTONDOWN and (start_game == 2 or start_game == 3) and quitbutton.rect.collidepoint(event.pos):
             terminate()
