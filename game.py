@@ -14,7 +14,7 @@ SECOND_IMAGE = 'second_image'
 flag = FIRST_IMAGE
 MAPSIZE = 12750
 points = 0
-start_game = 0 # 0 - игра не началась, показать заставку. 1 - игра идёт. 2 - игра закончилась, финальный экран
+start_game = 0 # 0 - игра не началась, показать заставку. 1 - игра идёт. 2 - игра закончилась, финальный экран, 3 - игра на паузе
 
 
 def terminate():
@@ -23,11 +23,15 @@ def terminate():
     sys.exit()
 
 def save_data(text):
-    with open("saved_result.txt", "r") as f:
-        saved = f.readline()
-        if int(saved) < int(text):
-            with open("saved_result.txt", "w") as f:
-                f.write(text)
+    if os.path.isfile("saved_result.txt"):
+        with open("saved_result.txt", "r") as f:
+            saved = f.readline()
+            if int(saved) < int(text):
+                with open("saved_result.txt", "w") as f:
+                    f.write(str(text))
+    else:
+        with open("saved_result.txt", "w") as f:
+             f.write(str(text))
 
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
@@ -92,6 +96,28 @@ def final_screen():
         text_coord += intro_rect.height
         screen.blit(string_rendered, intro_rect)
 
+def pause_screen():
+    if not os.path.isfile("saved_result.txt"):
+        record = "0"
+    else:
+        with open("saved_result.txt", "r") as f:
+            record = f.readline()
+    intro_text = ["Игра на паузе.",
+                  f"Ваш результат: {points}",
+                  f"Ваш лучший результат: {record}"]
+    fon = pygame.transform.scale(load_image('fon.jpg'), (WIDTH, HEIGHT))
+    screen.blit(fon, (0, 0))
+    font = pygame.font.Font(None, 30)
+    text_coord = 50
+    for line in intro_text:
+        string_rendered = font.render(line, 1, pygame.Color('white'))
+        intro_rect = string_rendered.get_rect()
+        text_coord += 10
+        intro_rect.top = text_coord
+        intro_rect.x = 10
+        text_coord += intro_rect.height
+        screen.blit(string_rendered, intro_rect)
+
 class StartButton(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__(btn_sprite)
@@ -131,6 +157,36 @@ class QuitButton(pygame.sprite.Sprite):
     def update(self):
         self.rect.x = 350
         self.rect.y = 400
+
+
+class PauseButton(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__(all_sprites)
+        self.image = load_image('pause.jpg', -1)
+        self.image = pygame.transform.scale(self.image, (40, 40))
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect.x = 10
+        self.rect.y = 40
+
+    def update(self):
+        self.rect.x = 10
+        self.rect.y = 40
+
+class ContinueButton(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__(contbtn_sprite)
+        self.image = load_image('continue.png', -1)
+        self.image = pygame.transform.scale(self.image, (150, 60))
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect.x = 350
+        self.rect.y = 220
+
+    def update(self):
+        self.rect.x = 350
+        self.rect.y = 220
+
 
 class Main_bird(pygame.sprite.Sprite):
     def __init__(self, sheet, columns, rows, x, y):
@@ -232,10 +288,7 @@ class Palms_copy(pygame.sprite.Sprite):
         elif palms.rect.x > -MAPSIZE + WIDTH:
             self.rect.x = WIDTH
 
-def buttons():
-    pause_image = load_image('pause.jpg', -1)
-    pause_image = pygame.transform.scale(pause_image, (60, 60))
-    screen.blit(pause_image, (10, 30))
+
 
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -246,10 +299,13 @@ start_screen()
 final_btn_sprite = pygame.sprite.Group()
 btn_sprite = pygame.sprite.GroupSingle()
 bird_sprite = pygame.sprite.GroupSingle()
+contbtn_sprite = pygame.sprite.GroupSingle()
 all_sprites = pygame.sprite.Group()
 startbutton = StartButton()
 restartbutton = RestartButton()
 quitbutton = QuitButton()
+pausebutton = PauseButton()
+continuebutton = ContinueButton()
 player = Main_bird(load_image('sprites.png', -1), 5, 3, 80, 220)
 palms = Palms()
 palms_copy = Palms_copy()
@@ -267,12 +323,18 @@ while True:
             player.rect = player.rect.move(0, -35)
         if event.type == pygame.MOUSEBUTTONDOWN and start_game == 0 and startbutton.rect.collidepoint(event.pos):
             start_game = 1
-        if event.type == pygame.MOUSEBUTTONDOWN and start_game == 2 and restartbutton.rect.collidepoint(event.pos):
+        if event.type == pygame.MOUSEBUTTONDOWN and (start_game == 2 or start_game == 3) and restartbutton.rect.collidepoint(event.pos):
             start_game = 1
             palms.rect.x = 220
             flag = FIRST_IMAGE
+            save_data(str(points))
             points = 0
-        if event.type == pygame.MOUSEBUTTONDOWN and start_game == 2 and quitbutton.rect.collidepoint(event.pos):
+        if event.type == pygame.MOUSEBUTTONDOWN and start_game == 1 and pausebutton.rect.collidepoint(event.pos):
+            save_data(str(points))
+            start_game = 3
+        if event.type == pygame.MOUSEBUTTONDOWN and start_game == 3 and continuebutton.rect.collidepoint(event.pos):
+            start_game = 1
+        if event.type == pygame.MOUSEBUTTONDOWN and (start_game == 2 or start_game == 3) and quitbutton.rect.collidepoint(event.pos):
             terminate()
 
     if start_game == 0:
@@ -288,9 +350,15 @@ while True:
         points += 1
         points_txt = f1.render(str(points), 1, (0, 0, 0))
         screen.blit(points_txt , (10, 10))
-        buttons()
     elif start_game == 2:
         final_screen()
+        save_data(str(points))
+        final_btn_sprite.draw(screen)
+        final_btn_sprite.update()
+    elif start_game == 3:
+        pause_screen()
+        contbtn_sprite.draw(screen)
+        contbtn_sprite.update()
         final_btn_sprite.draw(screen)
         final_btn_sprite.update()
     pygame.display.flip()
