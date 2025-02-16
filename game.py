@@ -283,21 +283,24 @@ class Berry(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = -50
 
+    def move_berry(self):
+        self.rect.x = WIDTH
+        y = choice([randint(50, HEIGHT // 2 - 100), randint(HEIGHT // 2 + 100, HEIGHT - 100)])
+        for _ in range(4):  # У системы есть 4 попытки выбрать положение, при котором ягодка не касается пальмы.
+            # Если такое положение так и не было найдено - значит ягодка растёт на пальме :)
+            if palms.rect.collidepoint(self.rect.x, y) or palms_copy.rect.collidepoint(self.rect.x, y):
+                y = choice([randint(50, HEIGHT // 2 - 100), randint(HEIGHT // 2 + 100, HEIGHT - 100)])
+            else:
+                break
+        self.rect.y = y
+
     def update(self):
         global points
-        do_collid = pygame.sprite.collide_mask(self, player)
-        if do_collid or self.rect.x < -40:
-            self.rect.x = WIDTH
-            y = choice([randint(50, HEIGHT // 2 - 100), randint(HEIGHT // 2 + 100, HEIGHT - 100)])
-            for _ in range(4):  # У системы есть 4 попытки выбрать положение, при котором ягодка не касается пальмы.
-                # Если такое положение так и не было найдено - значит ягодка растёт на пальме :)
-                if palms.rect.collidepoint(self.rect.x, y) or palms_copy.rect.collidepoint(self.rect.x, y):
-                    y = choice([randint(50, HEIGHT // 2 - 100), randint(HEIGHT // 2 + 100, HEIGHT - 100)])
-                else:
-                    break
-            self.rect.y = y
-            if do_collid:
-                points += 300
+        if self.rect.x < -40:
+            self.move_berry()
+        if pygame.sprite.collide_mask(self, player):
+            points += 300
+            self.move_berry()
         self.rect = self.rect.move(-1, 0)
 
 
